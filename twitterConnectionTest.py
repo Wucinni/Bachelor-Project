@@ -24,7 +24,7 @@ def search_twitter(query, tweet_fields, bearer_token = BEARER_TOKEN):
 
 #Function call
 #search term
-query = "emag"
+query = "dogs"
 #twitter fields to be returned by api call
 tweet_fields = "tweet.fields=text,author_id,created_at"
 
