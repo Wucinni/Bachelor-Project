@@ -1,5 +1,16 @@
+#############################################
+#                                           #
+#   This script manages the Reddit API      #
+#                                           #
+#  It handles request for post and comments #
+#       retrieval and comments response     #
+#                                           #
+#############################################
+
+
 import praw
 
+# Praw object for Reddit Credentials
 reddit_full_credentials = praw.Reddit(
         client_id='Bq406aMbmTGkdb53cuvi8w',
         client_secret='cRlmOxHwBW1yMo4WWUGPQ5hY-RewHw',
@@ -8,6 +19,7 @@ reddit_full_credentials = praw.Reddit(
         password='DacaEValoare49'
     )
 
+# Praw object for Reddit Credentials
 reddit_no_credentials = praw.Reddit(
         client_id="Bq406aMbmTGkdb53cuvi8w",
         client_secret="cRlmOxHwBW1yMo4WWUGPQ5hY-RewHw",
@@ -15,54 +27,61 @@ reddit_no_credentials = praw.Reddit(
     )
 
 
-def retrieve_posts(query_input):
-    print("In Retrieve Post")
-    if query_input is None or len(str(query_input)) == 0:
-        query = "python"
-    else:
-        query = str(query_input)
+def retrieve_posts(query=None):
+    """
+        Function uses the Reddit API to retrieve a post using the query
+        input - query; Type STR
+        output - post id; Type INT
+    """
 
-    print("Getting Subreddit")
+    # Set query to a default query or to input
+    query = "python" if (query is None or len(str(query)) == 0) else str(query)
+
+    # Search key query in all subsections of Reddit
     subreddit = reddit_no_credentials.subreddit("all")
 
-    print("Getting Post")
+    # Search for the first post in the subreddit that includes the query in title
     posts = subreddit.search(query, limit=1)
 
     posts_titles = []
     posts_ids = []
 
-    #for post in posts:
-    #    print("\n\n", post.title, "\n\n")
-
-    print("Searching in Posts")
-    print(posts)
+    # Save all posts and their ids in lists
     for post in posts:
         posts_titles.append(post.title)
-        print("Title:", post.title)
         posts_ids.append(post.id)
-        print("ID:", post.id)
 
     return posts_ids
 
 
 def retrieve_comments(query):
-    print("In retrieve comments")
-    post_id = retrieve_posts(query)
-    print("POST ID:", post_id)
+    """
+        Function will retrieve comments from a post based on its id
+        input - query to be passed to post id function; Type STR
+        output - all comments texts and ids; Type Tuple of Lists
+    """
 
+    # Get post id from post function
+    post_id = retrieve_posts(query)
+
+    # Extract submission object from the post
     submission = reddit_no_credentials.submission(id=post_id[0])
 
+    # Extract comments from submission
     submission.comments.replace_more(limit=0)
 
-    print("Here")
     comments_bodies = []
     comments_ids = []
 
-    counter = 0
+    counter = 0 # Counter to check how many comments were retrieved
+    # Extract all comments and their ids from the submission
     for comment in submission.comments.list()[0:1000]:
+        # Limit comment size and don't retrieve delete notification
         if len(comment.body) <= 100 and comment.body != "[deleted]":
             comments_ids.append(comment.id)
             comments_bodies.append(comment.body)
+
+            # Counter to limit the number of comments extracted
             counter = counter + 1
             if counter == 10:
                 break
@@ -71,18 +90,14 @@ def retrieve_comments(query):
 
 
 def respond_to_comment(comment_id, text):
-    print("Replying")
+    """
+        Function will respond to a comment using Reddit API
+        input - comment_id; Type STR
+              - text; Type STR
+        output - None
+    """
+    # Create comment object
     comment = reddit_full_credentials.comment(id=comment_id)
-    comment.reply(text)
 
-#value = retrieve_comments("Samsung")[0]
-#print(type(value))
-#i= 0
-#import _4_preprocessing as p
-#for j in value:
-#    #print("\n", j)
-#    print(type(p.text_cleaning(j)))
-#    i = i+1
-#print(i)
-#a = [1, 2, 3, 4]
-#print(a)
+    # Send reply
+    comment.reply(text)

@@ -29,6 +29,9 @@ def dataset_grabber(data_source):
 
     return train_data
 
+import _4_trainer_config as trainer_config
+print(type(dataset_grabber(trainer_config.data_location)))
+
 def text_cleaning(text, remove_stop_words=True, lemmatize_words=True):
     # Clean the text, with the option to remove stop_words and to lemmatize word
     # Clean the text

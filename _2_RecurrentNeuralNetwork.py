@@ -1,53 +1,82 @@
+#############################################
+#                                           #
+#   This script trains the model for the    #
+#       Recurrent Neural Network            #
+#                                           #
+#  It also saves model locally and retains  #
+#       its metrics in a text file          #
+#                                           #
+#############################################
+
+
 import joblib
-from sklearn.model_selection import train_test_split
+from keras.layers import SimpleRNN, Dense, Embedding
 from keras.preprocessing.text import Tokenizer
 from keras.utils import pad_sequences
-import keras
-from sklearn.metrics import accuracy_score, roc_curve, confusion_matrix, ConfusionMatrixDisplay, classification_report, auc, RocCurveDisplay
-from keras.layers import Bidirectional, LSTM, SimpleRNN, Conv1D, MaxPooling1D, Dense, Embedding, Flatten
-from os.path import exists
 from keras.models import Sequential
 import matplotlib.pyplot as plot
 import numpy as np
+import os
+from os.path import exists
+from sklearn.metrics import roc_curve, confusion_matrix, ConfusionMatrixDisplay, classification_report, auc, RocCurveDisplay
+from sklearn.model_selection import train_test_split
 from sklearn import metrics
 
 
+filename = os.path.basename(__file__)
+path = os.path.abspath(__file__)
+
+
 def recurrent_neural_network(dataset, text_counts, vectorizer, *args):
+    """
+        Function creates a neural network and then trains it and saves performance metrics
+        input - dataset; Type Pandas DataFrame
+              - text_counts; Type Compressed Sparse Row Matrix -> number of apparitions for a word / token
+              - vectorizer; Type Matrix of TF-IDF features
+              - args; Type None -> Unused; implemented for future updates
+        output - None
+    """
+
+    # Split data into training and testing
     text_train, text_test, sentiment_train, sentiment_test = train_test_split(dataset['text'], dataset['sentiment'],
                                                                               test_size=0.25, random_state=42)
 
+    # Load or Create Tokenizer
+    # It is used to "Learn the vocabulary"
     vocab_size = 10000
-    if exists("C:/Users/Dennis/PycharmProjects/Bachelor-Project/Models/Tokenizer.pkl"):
-        tokenizer = joblib.load("C:/Users/Dennis/PycharmProjects/Bachelor-Project/Models/Tokenizer.pkl")
+    if exists(path[:len(path)-len(filename)] + "/Models/Tokenizer.pkl"):
+        tokenizer = joblib.load(path[:len(path)-len(filename)] + "/Models/Tokenizer.pkl")
     else:
-
         tokenizer = Tokenizer(vocab_size)
         tokenizer.fit_on_texts(text_train)
-        joblib.dump(tokenizer, "C:/Users/Dennis/PycharmProjects/Bachelor-Project/Models/Tokenizer.pkl")
+        joblib.dump(tokenizer, path[:len(path)-len(filename)] + "/Models/Tokenizer.pkl")
 
+    # Create sequences of integers from text (tokens)
     train_sequences = tokenizer.texts_to_sequences(text_train)
     test_sequences = tokenizer.texts_to_sequences(text_test)
 
-    #train_padded = pad_sequences(train_sequences, padding='post', maxlen=200)
-    #test_padded = pad_sequences(test_sequences, padding='post', maxlen=200)
-
-    train_padded = pad_sequences(train_sequences)
-    t = train_padded.shape[1]
-    test_padded = pad_sequences(test_sequences, maxlen=t)
+    # Pad the sequences -> get all of them to the same size
+    data_train_padded = pad_sequences(train_sequences)
+    train_data_length = data_train_padded.shape[1]
+    data_test_padded = pad_sequences(test_sequences, maxlen=train_data_length)
 
     # define model
     RNN = Sequential()
-    # vocab_size = size of tokenizer embedding_dim = 5, max_length = train_padded.shape[1]
-    RNN.add(Embedding(len(tokenizer.word_index) + 1, 5, input_length=t))
+    # Create sequence of dense vector representation based on input
+    RNN.add(Embedding(len(tokenizer.word_index) + 1, 5, input_length=train_data_length))  # First param = vocab size
+    # Add recurrent layers which saves revious steps in calculations
+    # Relu function gives max(0, x) -> no negative values
     RNN.add(SimpleRNN(16, activation='relu', return_sequences=True))
     RNN.add(SimpleRNN(16, activation='relu'))
-    RNN.add(Dense(10, activation='relu'))
-    RNN.add(Dense(5, activation='sigmoid'))
+    # Add fully connected layers of neurons for output classification
+    RNN.add(Dense(10, activation='relu'))  # Return 0 for negative otherwise value
+    RNN.add(Dense(5, activation='sigmoid'))  # Classify output into 0 and 1
 
-    # compile model
+    # Prepare the model for training
     RNN.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-    history = RNN.fit(train_padded, sentiment_train, validation_data=(test_padded, sentiment_test), epochs=5, batch_size=100)
+    # Train model and save its metrics
+    history = RNN.fit(data_train_padded, sentiment_train, validation_data=(data_test_padded, sentiment_test), epochs=5, batch_size=100)
 
     # summarize history for accuracy
     plot.plot(history.history['accuracy'])
@@ -57,8 +86,7 @@ def recurrent_neural_network(dataset, text_counts, vectorizer, *args):
     plot.xlabel('epoch')
     plot.legend(['train', 'test'], loc='upper left')
     # plot.show()
-    plot.savefig(
-        'C:/Users/Dennis/PycharmProjects/Bachelor-Project/Models/Results/RecurrentNeuralNetwork/accuracy_evolution.png')
+    plot.savefig(path[:len(path) - len(filename)] + '/Models/Results/RecurrentNeuralNetwork/accuracy_evolution.png')
     plot.close()
 
     # summarize history for loss
@@ -69,42 +97,47 @@ def recurrent_neural_network(dataset, text_counts, vectorizer, *args):
     plot.xlabel('epoch')
     plot.legend(['train', 'test'], loc='upper left')
     # plot.show()
-    plot.savefig(
-        'C:/Users/Dennis/PycharmProjects/Bachelor-Project/Models/Results/RecurrentNeuralNetwork/loss_evolution.png')
+    plot.savefig(path[:len(path) - len(filename)] + '/Models/Results/RecurrentNeuralNetwork/loss_evolution.png')
     plot.close()
 
-    predictionRNN = RNN.predict(test_padded)
+    # Test model on test data
+    predictionRNN = RNN.predict(data_test_padded)
 
-    fpr, tpr, _ = roc_curve(sentiment_test, predictionRNN[:, 1], pos_label=4)
-    roc_auc = auc(fpr, tpr)
+    # Create performance metrics
+    # Calculate ROC Curve
+    false_positive_rate, true_positive_rate, _ = roc_curve(sentiment_test, predictionRNN[:, 1], pos_label=4)
+    roc_auc = auc(false_positive_rate, true_positive_rate)
 
-    cm_rnn = confusion_matrix(sentiment_test, np.argmax(predictionRNN, axis=1))
-    disp_rnn = ConfusionMatrixDisplay(confusion_matrix=cm_rnn)
+    # Calculate confusion matrix
+    confusion_matrix_rnn = confusion_matrix(sentiment_test, np.argmax(predictionRNN, axis=1))
+    image_confusion_matrix_rnn = ConfusionMatrixDisplay(confusion_matrix=confusion_matrix_rnn)
 
-    disp_rnn.plot()
-    # plot.title("Convolutional Neural Networks (CNN) - Metrics")
-    plot.savefig(
-        'C:/Users/Dennis/PycharmProjects/Bachelor-Project/Models/Results/RecurrentNeuralNetwork/rnn_confusion_matrix.png')
+    # Plot and save Confusion Matrix
+    image_confusion_matrix_rnn.plot()
+    # plot.title("Recurrent Neural Networks (RNN) - Metrics")
+    plot.savefig(path[:len(path)-len(filename)] + '/Models/Results/RecurrentNeuralNetwork/rnn_confusion_matrix.png')
     plot.close()
 
-    RocCurveDisplay(fpr=fpr, tpr=tpr).plot()
+    # Plot and save ROC Curve
+    RocCurveDisplay(fpr=false_positive_rate, tpr=true_positive_rate).plot()
     plot.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
-    plot.savefig(
-        'C:/Users/Dennis/PycharmProjects/Bachelor-Project/Models/Results/RecurrentNeuralNetwork/rnn_roc_curve.png')
+    plot.savefig(path[:len(path)-len(filename)] + '/Models/Results/RecurrentNeuralNetwork/rnn_roc_curve.png')
 
-    with open('C:/Users/Dennis/PycharmProjects/Bachelor-Project/Models/Results/RecurrentNeuralNetwork/metrics.txt','w') as the_file:
-        the_file.write(
+    # Save metrics of model to text files
+    with open(path[:len(path) - len(filename)] + '/Models/Results/RecurrentNeuralNetwork/metrics.txt', 'w') as file:
+        file.write(
             "RNN Accuracy: " + str(metrics.accuracy_score(np.argmax(predictionRNN, axis=1), sentiment_test)) + "\n"
         )
-        the_file.write(
+        file.write(
             "Positive: " + str(
                 classification_report(sentiment_test, np.argmax(predictionRNN, axis=1), output_dict=True)["4"]) + "\n" +
             "Negative: " + str(
                 classification_report(sentiment_test, np.argmax(predictionRNN, axis=1), output_dict=True)["0"]) + "\n\n"
         )
-        the_file.write(str(roc_auc))
+        file.write(str(roc_auc))
 
-    with open('C:/Users/Dennis/PycharmProjects/Bachelor-Project/Models/Results/accuracy.txt', 'a') as the_file:
-        the_file.write("RNN: " + str(metrics.accuracy_score(np.argmax(predictionRNN, axis=1), sentiment_test)) +  "\n")
+    with open(path[:len(path) - len(filename)] + '/Models/Results/accuracy.txt', 'a') as file:
+        file.write("RNN: " + str(metrics.accuracy_score(np.argmax(predictionRNN, axis=1), sentiment_test)) + "\n")
 
-    RNN.save("C:/Users/Dennis/PycharmProjects/Bachelor-Project/Models/RecurrentNeuralNetwork/RecurrentNeuralNetwork.h5")
+    # Save model locally
+    RNN.save(path[:len(path) - len(filename)] + "/Models/RecurrentNeuralNetwork/RecurrentNeuralNetwork.h5")

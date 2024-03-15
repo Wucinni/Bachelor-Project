@@ -31,6 +31,9 @@ def return_tfidf_vectorizer(dataset):
     return vectorizer
 
 
+print(type(return_tfidf_vectorizer(preprocessing.dataset_grabber(trainer_config.data_location))))
+
+
 def run():
     # Gets training data after it has been cleaned
     dataset = preprocessing.dataset_grabber(trainer_config.data_location)
