@@ -11,6 +11,7 @@ This application:
 ## Installation
 
 You will need the latest Python version available, preferably 3.10 which this bot was created in.
+
 The models used from Keras library run on CPU by default, if you want a faster training time you need to have Tensorflow CUDA and a GPU with support.
 
 :warning: Last implementation of TensorFlow with GPU support on windows was tensorflow 2.10.
