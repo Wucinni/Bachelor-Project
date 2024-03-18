@@ -2,15 +2,21 @@
 #                                           #
 #   Configuration file for training script  #
 #                                           #
-#   Change model and training data          #
+#      Change model and training data       #
 #                                           #
 #############################################
 
 
 import os
 
-data_location = os.getcwd() + "\\_1_1600000.processed.noemoticon.csv"
-print(data_location)
+
+filename = os.path.basename(__file__)
+path = os.path.abspath(__file__)
+
+data_location = path[:len(path) - len(filename)] + "\\_1_1600000tweets.csv"
+dataset_name = "_1_1600000tweets.csv"  # This one is the result of preprocessing
+original_dataset_name = "_1_1600000.processed.noemoticon.csv"  # This one is not cleaned
+
 
 algorithms = {
     # "_2_NaiveBayes": ["naive_bayes"],
