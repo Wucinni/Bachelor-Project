@@ -1,3 +1,3 @@
 ![](README_Assets/sentiment_analysis_logo.png)
 
-Desktop and web application for sentiment analysis on ~~Twitter~~ Reddit.
+Desktop and web application for sentiment analysis on ~~Twitter~~ Reddit using Machine Learning.
