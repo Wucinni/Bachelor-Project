@@ -68,3 +68,9 @@ For user interface, Flask is used as a server to make usage of the models a lot 
 :warning: If you modified the running port, you have to run again the batch file ('allow_site_through_firewall.cmd') in order to open the newly chosen port through firewall. Do not forget to replace port number with newly chosen port.
 
 :warning: In order to access the website worldwide you have to do port forwarding in router settings.
+
+# Gallery
+
+Desktop Web Interface:
+
+Mobile Web Interface:
