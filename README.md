@@ -1,6 +1,6 @@
 ![](README_Assets/sentiment_analysis_logo.png)
 
-Desktop and web application for sentiment analysis on ~~Twitter~~ Reddit using Machine Learning.
+Web application for sentiment analysis on ~~Twitter~~ Reddit using Machine Learning.
 
 This application:
 1. Can train and feed text to 4 models (2 Classifiers and 2 Neural Networks)
