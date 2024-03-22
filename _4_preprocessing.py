@@ -48,7 +48,7 @@ def dataset_grabber(data_source, dataset_name, original_dataset_name):
         # Replaces values in sentiment column to scale it for binary
         train_data.iloc[:, 1].replace(4, 1)
         # Create and export new file to disk
-        train_data.to_csv('_1_1600000tweets.csv', index=False)
+        train_data.to_csv(dataset_name, index=False)
         train_data.columns = ['sentiment', 'text']
 
     return train_data
