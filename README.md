@@ -25,3 +25,21 @@ The models used from Keras library runs on CPU by default, if you want a faster 
 
 :warning: For flask server to run outside the local area network you have to open the port by using the batch file 'allow_site_through_firewall.cmd'.
 </details>
+
+# Documentation
+
+## Models
+
+There are 4 models implemented separated in 2 categories: classifiers and neural networks.
+
+### Classifiers
+
+The main classifiers are:
+1. Naive-Bayes - a probabilistic model based on Thomas Bayes' theorem.
+2. Support Vector Machine (SVM) - a statistic model based on support vectors for data clustering.
+
+### Neural Networks
+
+The neural newtorks are:
+1. Convolutional Neural Network (CNN) - a feed-forward model based on filter optimization.
+2. Recurrent Neural Network (RNN) - a bi-directional model based on internal "memory".
