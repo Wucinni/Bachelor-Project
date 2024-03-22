@@ -58,7 +58,7 @@ By default input will pass through a few filters:
 3. Redundant data will be removed such as: links, special characters, and float numbers.
 4. Words will be shortened to their stems for a more efficient vocabulary.
 
-### Performances Interpretation
+### Performance
 
 For performance analysis, models and their metrics are saved in the Models folder.
 
