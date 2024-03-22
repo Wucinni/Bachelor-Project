@@ -43,3 +43,28 @@ The main classifiers are:
 The neural newtorks are:
 1. Convolutional Neural Network (CNN) - a feed-forward model based on filter optimization.
 2. Recurrent Neural Network (RNN) - a bi-directional model based on internal "memory".
+
+## Training
+
+Training was done by using the data gathered by sentiment140, a file that contains 1.6 million tweets with a rating of 0-2-4 where 0 is a negative review and 4 is a positive review. 
+
+:warning: If you wish to retrain the models with a different dataset, change name and location in _4_trainer_config.py .
+
+### Preprocessing
+
+By default input will pass through a few filters:
+1. NaN values will be replaced with an empty string for data consistency.
+2. Punctuation and stop words will be removed.
+3. Redundant data will be removed such as: links, special characters, and float numbers.
+4. Words will be shortened to their stems for a more efficient vocabulary.
+
+## Web Interface
+
+For user interface, Flask is used as a server to make usage of the models a lot easier.
+
+- By default Flask Server will run on LAN using the IPv4 Address.
+- Standard port is set to flask default(5000).
+
+:warning: If you modified the running port, you have to run again the batch file ('allow_site_through_firewall.cmd') in order to open the newly chosen port through firewall. Do not forget to replace port number with newly chosen port.
+
+:warning: In order to access the website worldwide you have to do port forwarding in router settings.
