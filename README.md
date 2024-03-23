@@ -36,7 +36,7 @@ There are 4 models implemented separated in 2 categories: classifiers and neural
 
 The main classifiers are:
 1. Naive-Bayes - a probabilistic model based on Thomas Bayes' theorem.
-2. Support Vector Machine (SVM) - a statistic model based on support vectors for data clustering.
+2. Support Vector Machine (SVM) - a statistical model based on support vectors for data clustering.
 
 ### Neural Networks
 
